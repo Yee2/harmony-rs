@@ -1,0 +1,25 @@
+[Unit]
+Description=A simple http/https forwarding server
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+AmbientCapabilities=SO_MARK
+#User=nobody
+#Group=nobody
+Environment=RUST_LOG=debug
+ExecStartPre=/etc/harmony-rs/pre.sh
+ExecStart=/usr/local/bin/harmony-rs \
+            --proxy 127.0.0.1:1080 \
+            --rule-file /etc/harmony-rs/rules.json \
+            --http-port 8080 \
+            --https-port 8443 \
+            --fwmark 8366 \
+            --enable-control-pipe
+ExecStopPost=/etc/harmony-rs/post.sh
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
