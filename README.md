@@ -53,7 +53,7 @@ sudo harmony-rs install --debug
 
 执行这个命令会创建配置文件夹 `/etc/harmony-rs` 并且初始化一些配置文件，并且创建一个 systemd 服务单元路径 `/etc/systemd/system/harmony-rs.service`。
 
-默认安装会将听端口 8080/8433，并且通过 nftables 规则将本地所有 http/https 流量转发到这两个端口，之后会根据请求主机名判断走代理还是直接请求，默认代理地址为 127.0.0.1:1080，你需要先启动一个 socks5 代理服务器并且监听这个地址。
+默认安装会监听端口 8080/8433，并且通过 nftables 规则将本地所有 http/https 流量转发到这两个端口，之后会根据请求主机名判断走代理还是直接请求，默认代理地址为 127.0.0.1:1080，你需要先启动一个 socks5 代理服务器并且监听这个地址。
 
 nftables 规则文件路径为 `/etc/harmony-rs/pre.sh`，你可能需要根据自己需求修改部分参数。默认情况下会放行 fwmark 为 8366 的流量。
 
