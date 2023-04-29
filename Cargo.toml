@@ -8,6 +8,7 @@ panic = 'abort'
 
 [dependencies]
 url = "2.3.1"
+sd-notify = "0.4.1"
 clap = { version = "4.1.13" }
 tokio = { version = "1", features = ["full"] }
 libc = { version = "0.2" }

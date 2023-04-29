@@ -6,6 +6,7 @@ use std::net::SocketAddr;
 use clap::{Arg, ArgAction, Command};
 use clap::builder::Str;
 use log::{debug, error, info, warn};
+use sd_notify::NotifyState;
 use tokio::join;
 use tokio::net::TcpListener;
 
@@ -206,6 +207,9 @@ async fn main() {
             };
         })
     };
+    if let Err(e) = sd_notify::notify(true, &[NotifyState::Ready]) {
+        info!("sd_notify err: {}",e);
+    }
     let (_, _) = join!(http_job,https_job);
 }
 

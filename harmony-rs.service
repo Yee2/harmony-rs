@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Restart=always
-Type=simple
+Type=notify
 AmbientCapabilities=SO_MARK
 #User=nobody
 #Group=nobody
