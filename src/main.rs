@@ -3,6 +3,7 @@ extern crate core;
 use std::{process, str};
 use std::net::SocketAddr;
 
+use anyhow::anyhow;
 use clap::{Arg, ArgAction, Command};
 use clap::builder::Str;
 use log::{debug, error, info, warn};
@@ -20,11 +21,11 @@ mod rule;
 mod proxy;
 mod rules;
 
-const INSTALL_FILES: &[(&[u8], &str); 4] = &[
-    (include_bytes!("../harmony-rs.service"), "/etc/systemd/system/harmony-rs.service"),
-    (include_bytes!("../rules.json"), "/etc/harmony-rs/rules.json"),
-    (include_bytes!("../post.sh"), "/etc/harmony-rs/post.sh"),
-    (include_bytes!("../pre.sh"), "/etc/harmony-rs/pre.sh")
+const INSTALL_FILES: &[(&[u8], &str, u32); 4] = &[
+    (include_bytes!("../harmony-rs.service"), "/etc/systemd/system/harmony-rs.service", 0o644),
+    (include_bytes!("../rules.json"), "/etc/harmony-rs/rules.json", 0o644),
+    (include_bytes!("../post.sh"), "/etc/harmony-rs/post.sh", 0o755),
+    (include_bytes!("../pre.sh"), "/etc/harmony-rs/pre.sh", 0o755)
 ];
 
 #[tokio::main]
@@ -108,7 +109,7 @@ async fn main() {
                 }
             }
             let overwrite = installArgs.get_flag("overwrite");
-            for &(data, file) in INSTALL_FILES {
+            for &(data, file, m) in INSTALL_FILES {
                 if !overwrite && Path::new(file).exists() {
                     info!("ignore exist file: {}",file);
                     continue;
@@ -124,6 +125,10 @@ async fn main() {
                 };
                 if let Err(e) = fs::write(file, data) {
                     warn!("write {} error: {}", file, e);
+                    process::exit(255);
+                }
+                if let Err(e) = chmod(file, m) {
+                    warn!("chmod {} error: {}", file, e);
                     process::exit(255);
                 }
             }
@@ -213,3 +218,14 @@ async fn main() {
     let (_, _) = join!(http_job,https_job);
 }
 
+
+fn chmod(file: &str, m: u32) -> anyhow::Result<()> {
+    use std::ffi::CString;
+    use libc::{chmod, mode_t};
+    let path = CString::new(file)?;
+    let r = unsafe { chmod(path.as_ptr(), m as mode_t) };
+    if r != 0 {
+        return Err(anyhow!("Failed to change file permission: {r}"));
+    }
+    Ok(())
+}
